@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  redis_bot:
+    image: redis:alpine
+    container_name: grammy_redis_local
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: always
+
+volumes:
+  redis_data:
