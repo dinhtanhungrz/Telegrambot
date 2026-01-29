@@ -5,7 +5,8 @@ export interface CountryConfig {
     rateId: string;
     feePercent: number;
     minAmount: number;
-    adminGroupId: number; // Thêm dòng này để TS không báo lỗi
+    adminGroupId: number;
+    lang: string;
 }
 
 export const COUNTRIES: Record<string, CountryConfig> = {
@@ -15,8 +16,11 @@ export const COUNTRIES: Record<string, CountryConfig> = {
         currency: 'VND',
         rateId: 'USDT',
         feePercent: 2.5,
-        minAmount: 100000,
-        adminGroupId: -100123456789 // Điền ID nhóm Admin thật của bạn vào đây
+      
+        minAmount: 10, 
+
+        adminGroupId: -100123456789, 
+        lang: 'vi'
     },
     us: {
         code: 'us',
@@ -24,7 +28,8 @@ export const COUNTRIES: Record<string, CountryConfig> = {
         currency: 'USD',
         rateId: 'BTC',
         feePercent: 3.0,
-        minAmount: 50,
-        adminGroupId: -100987654321
+        minAmount: 0.001,
+        adminGroupId: -100123456789,
+        lang: 'en'
     }
 };

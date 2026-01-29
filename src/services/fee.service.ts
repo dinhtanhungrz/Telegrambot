@@ -1,4 +1,4 @@
-// Hàm tính toán phí
+// Hàm tính phí
 export const calculateFee = (amount: number, feePercent: number) => {
     const fee = amount * (feePercent / 100);
     return {
@@ -8,9 +8,9 @@ export const calculateFee = (amount: number, feePercent: number) => {
     };
 };
 
-// Hàm kiểm tra đầu vào (Logic Sprint 3)
+// Hàm kiểm tra số tiền (Validate)
 export const validateAmount = (amount: number, min: number) => {
-    if (isNaN(amount)) return "Số tiền không hợp lệ.";
+    if (isNaN(amount) || amount <= 0) return "Số tiền không hợp lệ.";
     if (amount < min) return `Thấp hơn mức tối thiểu: ${min}`;
-    return null; // Không có lỗi
+    return null;
 };
