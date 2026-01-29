@@ -1,31 +1,3 @@
-telegram-bot/
-├── node_modules/          # Thư viện (Tự sinh ra khi npm install)
-├── src/                   # Source code chính
-│   ├── bot/
-│   │   └── handlers/      # Các bộ xử lý sự kiện
-│   │       ├── logic.ts       # Xử lý tính tiền, nhập liệu
-│   │       ├── navigation.ts  # Xử lý Menu, lệnh /start, /cancel
-│   │       └── settings.ts    # Xử lý đổi ngôn ngữ
-│   ├── config/
-│   │   └── countries.ts   # Cấu hình tỷ giá, Min/Max, Admin ID
-│   ├── locales/           # Từ điển ngôn ngữ
-│   │   ├── en.ts          # Tiếng Anh
-│   │   └── vi.ts          # Tiếng Việt
-│   ├── services/          # Các hàm phụ trợ
-│   │   └── fee.service.ts # Hàm tính toán phí & validate số
-│   ├── types/
-│   │   └── session.ts     # Định nghĩa kiểu dữ liệu (Typescript)
-│   |─ ui/                # Giao diện người dùng
-│      └── user/
-│          ├── keyboards.ts   # Các nút bấm (Buttons)
-│          └── messages.ts    # Các mẫu tin nhắn (Hóa đơn, Thông báo)
-│   
-├── .env                   # Lưu Token (Bảo mật)
-├── .gitignore             # File chặn Git (để không up file rác lên Github)
-├── package.json           # Khai báo thư viện & lệnh chạy
-├── README.md              # Hướng dẫn sử dụng dự án
-└── tsconfig.json          # Cấu hình TypeScript
-└── index.ts           FILE CHẠY CHÍNH (Main Entry)
 
  Hướng Dẫn Sử Dụng (Cho User)
 
