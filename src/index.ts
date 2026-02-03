@@ -1,78 +1,95 @@
-import { Bot, session } from 'grammy';
-import dotenv from 'dotenv';
-import { MyContext, INITIAL_SESSION } from './types/session';
+import { Bot, session } from "grammy";
+import { limit } from "@grammyjs/ratelimiter"; // Thư viện chống Spam
+import fs from "fs"; // Thư viện ghi file Log
+import { router } from "./bot/router";
+import { Handlers } from "./bot/handlers";
+import { INITIAL_SESSION, MyContext } from "./types/session";
+import { ENV } from "./config/env";
 
-// Import Handlers
-import navigationHandlers from './bot/handlers/navigation';
-import logicHandlers from './bot/handlers/logic';
-import settingsHandlers from './bot/handlers/settings';
+async function bootstrap() {
+    // Khởi tạo Bot
+    const bot = new Bot<MyContext>(ENV.BOT_TOKEN);
 
-// Import Ngôn ngữ
-import { vi } from './locales/vi';
-import { en } from './locales/en';
+    // 1. 🧠 CÀI ĐẶT BỘ NHỚ (Session)
+    bot.use(session({
+        initial: () => ({ ...INITIAL_SESSION }),
+    }));
 
-dotenv.config();
+    // 2. 🛡️ CÀI ĐẶT CHỐNG SPAM (Rate Limiter)
+    // Giới hạn: 1 người chỉ được gửi 3 tin trong 2 giây
+    bot.use(limit({
+        timeFrame: 2000, 
+        limit: 3,
+        onLimitExceeded: async (ctx) => {
+            // Chỉ cảnh báo nếu là chat riêng, trong nhóm admin thì thôi cho đỡ rác
+            if (ctx.chat?.type === 'private') {
+                await ctx.reply("⚠️ Bạn thao tác quá nhanh! Vui lòng chậm lại.");
+            }
+        },
+        keyGenerator: (ctx) => ctx.from?.id.toString(), // Chặn theo ID người dùng
+    }));
 
-async function main() {
-    const token = process.env.BOT_TOKEN;
-    if (!token) throw new Error("⚠️ Chưa có BOT_TOKEN");
-
-    const bot = new Bot<MyContext>(token);
-
-    console.log("⏳ Đang khởi động Bot...");
-
-    // 1. SESSION
-    bot.use(session({ initial: () => JSON.parse(JSON.stringify(INITIAL_SESSION)) }));
-
-    // 2. LOGGER (Giữ nguyên)
+    // 3. 👮 CỔNG AN NINH (Phân quyền User/Admin)
     bot.use(async (ctx, next) => {
-        const user = ctx.from?.first_name || "Unknown";
-        let content = ctx.message?.text || ctx.callbackQuery?.data || "Action";
-        console.log(`📩 [${user}]: ${content} | Lang: ${ctx.session.lang}`);
-        await next();
+        const chatType = ctx.chat?.type;
+        const chatId = ctx.chat?.id.toString();
+
+        // A. Chat riêng (Khách mua hàng) -> CHO QUA
+        if (chatType === 'private') {
+            await next(); 
+            return;
+        }
+
+        // B. Nhóm Admin (Quản lý) -> CHO QUA
+        if (chatId === ENV.ADMIN_GROUP_ID) {
+            await next();
+            return;
+        }
+
+        // C. Nhóm lạ -> LỜ ĐI (Không trả lời)
+        return;
     });
 
-    // 3. MIDDLEWARE NGÔN NGỮ (FIX LỖI TẠI ĐÂY)
-    bot.use(async (ctx, next) => {
-        // 👇 KHÔNG khai báo const dictionary ở đây nữa (vì nó sẽ bị cũ)
+    // 4. ĐĂNG KÝ CÁC LỆNH
+    bot.command("start", Handlers.onStart);
+    bot.command("help", Handlers.onHelp);
+    bot.command("cancel", Handlers.onCancel);
+
+    // Lệnh test bot còn sống không (Chỉ Admin dùng)
+    bot.command("ping", async (ctx) => {
+        await ctx.reply(`⚡ Bot đang hoạt động tốt!`);
+    });
+
+    // 5. KÍCH HOẠT LUỒNG MUA BÁN (Router)
+    bot.use(router);
+
+    // 6. 📝 XỬ LÝ LỖI & GHI LOG (Anti-Crash)
+    bot.catch((err) => {
+        const ctx = err.ctx;
+        const date = new Date().toLocaleString("vi-VN");
+        const errorMsg = `[${date}] Lỗi tại update ID ${ctx.update.update_id}:`;
         
-        // Cập nhật hàm dịch "Thông minh hơn"
-        ctx.t = (key: string, params?: any) => {
-            // 1. Lấy ngôn ngữ MỚI NHẤT từ session ngay lúc gọi hàm
-            const currentLang = ctx.session.lang || 'en'; 
-            const dict = currentLang === 'vi' ? vi : en; // Chọn từ điển tại chỗ
+        // In ra màn hình console để xem ngay
+        console.error(errorMsg, err.error);
 
-            // 2. Dịch
-            let text = (dict as any)[key] || key;
-            if (params) {
-                Object.entries(params).forEach(([k, v]) => {
-                    text = text.replace(`{${k}}`, String(v));
-                });
-            }
-            return text;
-        };
-
-        // Hàm đổi ngôn ngữ
-        ctx.i18n = {
-            getLocale: () => ctx.session.lang || 'en',
-            setLocale: (l: string) => { 
-                ctx.session.lang = l; 
-                console.log(`♻️ Đã đổi ngôn ngữ sang: ${l}`);
-            }
-        };
-
-        await next();
+        // Ghi vào file 'error.log' để lưu bằng chứng
+        // (Nếu file chưa có nó tự tạo, nếu có rồi nó ghi nối tiếp)
+        try {
+            fs.appendFileSync("error.log", `${errorMsg} ${err.error}\n----------------\n`);
+        } catch (e) {
+            console.error("Không thể ghi file log:", e);
+        }
     });
 
-    // 4. HANDLERS
-    bot.use(navigationHandlers);
-    bot.use(settingsHandlers);
-    bot.use(logicHandlers);
-
-    // 5. START
-    bot.catch((err) => console.error("❌ Error:", err));
-    console.log("🚀 BOT ĐÃ SẴN SÀNG!");
+    // KHỞI ĐỘNG
+    console.log("---------------------------------------");
+    console.log("🚀 BOT ĐÃ KHỞI ĐỘNG THÀNH CÔNG!");
+    console.log(`🛡️ Chế độ bảo vệ: BẬT (Rate Limit 3/2s)`);
+    console.log(`📝 Ghi log lỗi: BẬT (error.log)`);
+    console.log(`📡 Đang trực tại nhóm Admin: ${ENV.ADMIN_GROUP_ID}`);
+    console.log("---------------------------------------");
+    
     await bot.start();
 }
 
-main();
+bootstrap();

@@ -14,12 +14,15 @@
   "type": "commonjs",
   "dependencies": {
     "@grammyjs/i18n": "^1.1.2",
+    "@grammyjs/ratelimiter": "^1.2.1",
+    "@grammyjs/router": "^2.0.0",
     "@grammyjs/storage-redis": "^2.5.1",
     "axios": "^1.13.2",
     "dotenv": "^17.2.3",
     "grammy": "^1.39.2",
     "ioredis": "^5.9.1",
-    "node-cache": "^5.1.2"
+    "node-cache": "^5.1.2",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/node": "^25.0.7",

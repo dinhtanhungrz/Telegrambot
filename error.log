@@ -1,0 +1,16 @@
+[12:23:24 3/2/2026] Lỗi tại update ID 673031082: TypeError: Cannot read properties of undefined (reading 'name')
+----------------
+[12:23:29 3/2/2026] Lỗi tại update ID 673031083: TypeError: Cannot read properties of undefined (reading 'coins')
+----------------
+[12:23:49 3/2/2026] Lỗi tại update ID 673031085: TypeError: Cannot read properties of undefined (reading 'areas')
+----------------
+[12:36:22 3/2/2026] Lỗi tại update ID 673031109: TypeError: Cannot read properties of undefined (reading 'sellFee')
+----------------
+[12:50:56 3/2/2026] Lỗi tại update ID 673031146: TypeError: Cannot read properties of undefined (reading 'sellFee')
+----------------
+[13:00:29 3/2/2026] Lỗi tại update ID 673031172: TypeError: Cannot read properties of undefined (reading 'buyFee')
+----------------
+[13:11:38 3/2/2026] Lỗi tại update ID 673031223: TypeError: Cannot read properties of undefined (reading 'name')
+----------------
+[13:11:41 3/2/2026] Lỗi tại update ID 673031224: TypeError: Cannot read properties of undefined (reading 'coins')
+----------------
